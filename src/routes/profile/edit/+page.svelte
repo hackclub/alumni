@@ -122,7 +122,7 @@
 		/>
 	</div>
 
-	<form method="POST" action="?/updateProfile" class="space-y-6">
+	<form method="POST" action="?/updateProfile" class="space-y-6" id="profile-form">
 
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 			<div>
@@ -286,18 +286,10 @@
 			</div>
 		</div>
 
-		<div class="pt-4">
-			<button
-				type="submit"
-				class="w-full bg-red-500 text-white py-3 px-4 rounded-md font-medium hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-			>
-				Save Changes
-			</button>
-		</div>
 	</form>
 
 	<hr class="border-gray-200 my-8" />
-	<h2 class="text-xl font-semibold text-gray-800 mb-4">Work Experience</h2>
+	<h2 class="text-xl font-semibold text-gray-800 mb-4">Work / School Experience</h2>
 
 	{#if profile.employments && profile.employments.length > 0}
 		<div class="space-y-4 mb-6">
@@ -313,7 +305,7 @@
 							<input type="hidden" name="employment_id" value={employment.employment_id} />
 							<div class="space-y-4">
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-1" for="company_name_{employment.employment_id}">Company</label>
+									<label class="block text-sm font-medium text-gray-700 mb-1" for="company_name_{employment.employment_id}">Company / School</label>
 									<input
 										type="text"
 										name="company_name"
@@ -490,4 +482,14 @@
 			+ Add Work Experience
 		</button>
 	{/if}
+
+	<div class="pt-8">
+		<button
+			type="submit"
+			form="profile-form"
+			class="w-full bg-red-500 text-white py-3 px-4 rounded-md font-medium hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+		>
+			Save Changes
+		</button>
+	</div>
 </main>
