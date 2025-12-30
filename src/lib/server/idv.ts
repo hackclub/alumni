@@ -40,3 +40,24 @@ export async function getIDVMe(accessToken: string): Promise<MeResponse> {
 
 	return response.json();
 }
+
+export type ExternalCheckResult =
+	| 'needs_submission'
+	| 'pending'
+	| 'verified_eligible'
+	| 'verified_but_over_18'
+	| 'rejected'
+	| 'not_found';
+
+export async function checkVerificationBySlackId(slackId: string): Promise<ExternalCheckResult> {
+	const response = await fetch(
+		`${IDV_BASE_URL}/api/external/check?slack_id=${encodeURIComponent(slackId)}`
+	);
+
+	if (!response.ok) {
+		throw new Error(`External check failed: ${response.status}`);
+	}
+
+	const data = await response.json();
+	return data.result;
+}

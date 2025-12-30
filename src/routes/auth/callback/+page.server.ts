@@ -8,7 +8,7 @@ import {
 import { PUBLIC_HC_OAUTH_CLIENT_ID, PUBLIC_HC_OAUTH_REDIRECT_URL } from '$env/static/public';
 import type { PageServerLoad } from './$types';
 import { createCipheriv, randomBytes } from 'crypto';
-import { getIDVMe } from '$lib/server/idv';
+import { getIDVMe, checkVerificationBySlackId } from '$lib/server/idv';
 
 function hashUserID(userID: string): string {
 	const iv = randomBytes(16);
@@ -31,21 +31,6 @@ function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T {
 
 	const json = Buffer.from(payload, 'base64').toString('utf8');
 	return JSON.parse(json) as T;
-}
-
-function calculateAge(birthdateIso: string): number {
-	const dob = new Date(birthdateIso);
-	if (Number.isNaN(dob.getTime())) return NaN;
-
-	const today = new Date();
-	let age = today.getFullYear() - dob.getFullYear();
-	const m = today.getMonth() - dob.getMonth();
-
-	if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-		age--;
-	}
-
-	return age;
 }
 
 async function fetchWithFallback(path: string, options: RequestInit): Promise<Response> {
@@ -96,6 +81,9 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		}
 
 		const data = await tokenResponse.json();
+		console.log('=== AUTH TOKEN RESPONSE ===');
+		console.log('Full token response:', JSON.stringify(data, null, 2));
+		
 		const accessToken: string | undefined = data.access_token;
 		const idToken: string | undefined = data.id_token;
 
@@ -107,49 +95,46 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		let claims: Record<string, unknown>;
 		try {
 			claims = decodeJwtPayload(idToken);
-			console.log('OIDC claims:', claims);
+			console.log('=== OIDC JWT CLAIMS ===');
+			console.log(JSON.stringify(claims, null, 2));
 		} catch (e) {
 			console.error('Failed to decode id_token', e);
 			redirect(302, '/');
 		}
 
-		let birthdate: string | undefined;
 		let idvData: Awaited<ReturnType<typeof getIDVMe>> | null = null;
-
 		try {
 			idvData = await getIDVMe(accessToken);
-			console.log('IDV me response:', idvData);
-			birthdate = idvData.identity.birthday;
+			console.log('=== IDV /api/v1/me RESPONSE ===');
+			console.log(JSON.stringify(idvData, null, 2));
 		} catch (e) {
 			console.error('Failed to fetch IDV /api/v1/me:', e);
-			redirect(302, '/?error=' + encodeURIComponent('Failed to verify your identity.'));
 		}
 
-		if (!birthdate) {
-			console.error('No birthdate in userinfo');
-			redirect(
-				302,
-				'/?error=' +
-					encodeURIComponent('You must share your birthdate in Hack Club Account to continue.')
-			);
-		}
+		const slackId = idvData?.identity?.slack_id || (claims.slack_id as string | undefined);
+		console.log('Resolved slack_id:', slackId);
 
-		const age = calculateAge(birthdate);
+		if (slackId) {
+			try {
+				const verificationResult = await checkVerificationBySlackId(slackId);
+				console.log('Verification check result:', verificationResult);
 
-		if (Number.isNaN(age)) {
-			console.error('Invalid birthdate format:', birthdate);
-			redirect(302, '/?error=' + encodeURIComponent('Could not read your birthdate.'));
-		}
+				if (verificationResult === 'verified_eligible') {
+					console.log('User is under 18, denying access');
+					redirect(302, '/?error=' + encodeURIComponent('You must be 18 or older to use this service.'));
+				}
 
-		if (age < 18) {
-			console.log('User is under 18, denying access');
-			redirect(302, '/?error=' + encodeURIComponent('You must be 18 or older to use this service.'));
-		}
-
-		const slackId = claims.slack_id as string | undefined;
-		if (!slackId) {
+				if (verificationResult !== 'verified_but_over_18') {
+					console.log('User not verified as over 18:', verificationResult);
+					redirect(302, '/?error=' + encodeURIComponent('You must complete identity verification and be 18+ to use this service.'));
+				}
+			} catch (e) {
+				console.error('Failed to check verification status:', e);
+				redirect(302, '/?error=' + encodeURIComponent('Failed to verify your age.'));
+			}
+		} else {
 			console.error('Missing slack_id claim');
-			redirect(302, '/?error=' + encodeURIComponent('Slack ID is missing from your Hack Club Account.'));
+			redirect(302, '/?error=' + encodeURIComponent('Slack ID is required for age verification.'));
 		}
 
 		const userResponse = await fetchWithFallback(
@@ -182,7 +167,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 					instagram: '',
 					linkedin: '',
 					personal_site: '',
-					birthdate: birthdate,
+					birthdate: idvData?.identity.birthday || null,
 					ysws_eligible: idvData?.identity.ysws_eligible ? 'true' : 'false',
 					city: '',
 					state: '',
