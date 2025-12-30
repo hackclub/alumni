@@ -25,6 +25,10 @@
 		"vite": "^7.2.6"
 	},
 	"dependencies": {
-		"@sveltejs/adapter-node": "^5.4.0"
+		"@sveltejs/adapter-node": "^5.4.0",
+		"@types/dompurify": "^3.0.5",
+		"@types/jsdom": "^27.0.0",
+		"dompurify": "^3.3.1",
+		"jsdom": "^27.4.0"
 	}
 }
