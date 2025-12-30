@@ -24,8 +24,8 @@ export async function getUser(userId: string) {
 	return response.json();
 }
 
-export async function getUserBySlack(slackHandle: string) {
-	const response = await fetchWithFallback(`/users/by-slack/${slackHandle}`, {
+export async function getUserBySlack(slack_id: string) {
+	const response = await fetchWithFallback(`/users/by-slack/${slack_id}`, {
 		headers: {
 			Authorization: BEARER_TOKEN_BACKEND
 		}

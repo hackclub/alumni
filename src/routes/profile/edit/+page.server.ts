@@ -55,7 +55,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Failed to update profile' });
 		}
 
-		return { success: true };
+		redirect(302, '/profile');
 	},
 
 	addEmployment: async ({ request, locals }) => {
