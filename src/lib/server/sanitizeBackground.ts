@@ -23,10 +23,9 @@ const DANGEROUS_PATTERNS = [
 	/@import/i,
 	/<script/i,
 	/<\/script/i,
-	/\\00/i,
-	/\\u00/i,
 	/&#/i,
-	/%[0-9a-f]{2}/i
+	/%[0-9a-f]{2}/i,
+	/\\/
 ];
 
 function decodeHTMLEntities(str: string): string {
@@ -48,14 +47,19 @@ function decodeURLEncoding(str: string): string {
 	}
 }
 
+function removeEscapes(str: string): string {
+	return str.replace(/\\+/g, '');
+}
+
 function isDangerous(value: string): boolean {
 	const decoded = decodeHTMLEntities(decodeURLEncoding(value));
-	const normalized = decoded.replace(/\s+/g, '').toLowerCase();
+	const withoutEscapes = removeEscapes(decoded);
+	const normalized = withoutEscapes.replace(/\s+/g, '').toLowerCase();
 
-	return (
-		DANGEROUS_PATTERNS.some((pattern) => pattern.test(value)) ||
-		DANGEROUS_PATTERNS.some((pattern) => pattern.test(decoded)) ||
-		DANGEROUS_PATTERNS.some((pattern) => pattern.test(normalized))
+	const allVariants = [value, decoded, withoutEscapes, normalized];
+
+	return allVariants.some((variant) =>
+		DANGEROUS_PATTERNS.some((pattern) => pattern.test(variant))
 	);
 }
 
