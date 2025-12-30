@@ -228,6 +228,27 @@
 		</div>
 
 		<hr class="border-gray-200" />
+		<h2 class="text-xl font-semibold text-gray-800">Profile Customization</h2>
+
+		<div>
+			<label for="custom_background" class="block text-sm font-medium text-gray-700 mb-1">
+				Custom Background CSS
+			</label>
+			<textarea
+				id="custom_background"
+				name="custom_background"
+				rows="3"
+				bind:value={profile.custom_background}
+				placeholder="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+				class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm"
+			></textarea>
+			<p class="mt-1 text-xs text-gray-500">
+				Enter CSS background properties (e.g., <code class="bg-gray-100 px-1 rounded">background-color: #f0f0f0;</code> or <code class="bg-gray-100 px-1 rounded">background-image: url(...);</code>).
+				Only <code class="bg-gray-100 px-1 rounded">background-*</code> properties are allowed.
+			</p>
+		</div>
+
+		<hr class="border-gray-200" />
 		<h2 class="text-xl font-semibold text-gray-800">Location</h2>
 
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -292,38 +313,42 @@
 							<input type="hidden" name="employment_id" value={employment.employment_id} />
 							<div class="space-y-4">
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+									<label class="block text-sm font-medium text-gray-700 mb-1" for="company_name_{employment.employment_id}">Company</label>
 									<input
 										type="text"
 										name="company_name"
+										id="company_name_{employment.employment_id}"
 										value={employment.company.name}
 										class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
 									/>
 								</div>
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+									<label class="block text-sm font-medium text-gray-700 mb-1" for="title_{employment.employment_id}">Title</label>
 									<input
 										type="text"
 										name="title"
+										id="title_{employment.employment_id}"
 										value={employment.title}
 										class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
 									/>
 								</div>
 								<div class="grid grid-cols-2 gap-4">
 									<div>
-										<label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+										<label class="block text-sm font-medium text-gray-700 mb-1" for="start_date_{employment.employment_id}">Start Date</label>
 										<input
 											type="date"
 											name="start_date"
+											id="start_date_{employment.employment_id}"
 											value={formatDate(employment.start_date)}
 											class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
 										/>
 									</div>
 									<div>
-										<label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+										<label class="block text-sm font-medium text-gray-700 mb-1" for="end_date_{employment.employment_id}">End Date</label>
 										<input
 											type="date"
 											name="end_date"
+											id="end_date_{employment.employment_id}"
 											value={formatDate(employment.end_date)}
 											disabled={employment.is_current}
 											class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-100"
