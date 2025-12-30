@@ -34,7 +34,7 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 
-		const updateData: Record<string, string> = {
+		const updateData: Record<string, string | null> = {
 			first_name: formData.get('first_name') as string,
 			second_name: formData.get('second_name') as string,
 			email: formData.get('email') as string,
@@ -45,7 +45,8 @@ export const actions: Actions = {
 			city: formData.get('city') as string,
 			state: formData.get('state') as string,
 			country: formData.get('country') as string,
-			phone_number: formData.get('phone_number') as string
+			phone_number: formData.get('phone_number') as string,
+			custom_background: (formData.get('custom_background') as string) || null
 		};
 
 		const response = await updateUser(locals.user.id, updateData);

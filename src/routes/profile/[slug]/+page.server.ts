@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
 import { getUser, getUserBySlack } from '$lib/server/api';
+import { sanitizeBackgroundCSSWithInfo } from '$lib/server/sanitizeBackground';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	if (!locals.user) {
@@ -19,8 +20,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		error(404, 'User not found');
 	}
 
+	const backgroundResult = sanitizeBackgroundCSSWithInfo(profile.custom_background);
+
 	return {
 		user: locals.user,
-		profile
+		profile,
+		backgroundStyle: backgroundResult.css,
+		backgroundBlocked: backgroundResult.blocked,
+		backgroundBlockedReason: backgroundResult.reason
 	};
 };
